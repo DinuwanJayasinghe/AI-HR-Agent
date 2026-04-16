@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+face-recognition
+python-multipart
+APScheduler
+pytz
+opencv-python
+numpy

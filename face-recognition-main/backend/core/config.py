@@ -1,0 +1,14 @@
+from pytz import timezone
+
+POSTGRES_USER = "postgres"
+POSTGRES_PASSWORD = "Admin"
+POSTGRES_HOST = "localhost"
+POSTGRES_PORT = "5432"
+POSTGRES_DB = "face_rec"
+
+DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
+TIMEZONE = timezone("Asia/Colombo")
+MODEL = "hog"
+TOLERANCE = 0.45
+INACTIVITY_MINUTES = 10

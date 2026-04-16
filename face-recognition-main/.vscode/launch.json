@@ -1,0 +1,52 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "frontend (Flutter CPH2481)",
+            "type": "dart",
+            "request": "launch",
+            "program": "frontend/lib/main.dart",
+            "cwd": "${workspaceFolder}/frontend",
+            "deviceId": "CPH2481"
+        },
+        {
+            "name": "frontend (Pixel 9 Pro Emulator)",
+            "type": "dart",
+            "request": "launch",
+            "program": "frontend/lib/main.dart",
+            "cwd": "${workspaceFolder}/frontend",
+            "deviceId": "Pixel_9_Pro"
+        },
+        {
+            "name": "frontend (Medium Phone Emulator)",
+            "type": "dart",
+            "request": "launch",
+            "program": "frontend/lib/main.dart",
+            "cwd": "${workspaceFolder}/frontend",
+            "deviceId": "Medium_Phone_API_36"
+        },
+        {
+            "name": "frontend (Chrome)",
+            "type": "dart",
+            "request": "launch",
+            "program": "frontend/lib/main.dart",
+            "cwd": "${workspaceFolder}/frontend",
+            "deviceId": "chrome"
+        },
+        {
+            "name": "frontend (Windows)",
+            "type": "dart",
+            "request": "launch",
+            "program": "frontend/lib/main.dart",
+            "cwd": "${workspaceFolder}/frontend",
+            "deviceId": "windows"
+        },
+        {
+            "name": "frontend (Flutter - Auto Select)",
+            "type": "dart",
+            "request": "launch",
+            "program": "frontend/lib/main.dart",
+            "cwd": "${workspaceFolder}/frontend"
+        }
+    ]
+}

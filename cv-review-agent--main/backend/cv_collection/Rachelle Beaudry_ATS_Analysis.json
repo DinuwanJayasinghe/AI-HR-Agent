@@ -1,0 +1,18 @@
+{
+  "cv_filename": "Rachelle Beaudry.pdf",
+  "original_filename": "Rachelle Beaudry.pdf",
+  "sender": "Local Folder",
+  "email_subject": "Previously Downloaded CV",
+  "email_date": "N/A",
+  "analysis_date": "2026-01-02 23:58:34",
+  "ats_score": 50,
+  "rank": 3,
+  "strengths": [
+    "Resume received"
+  ],
+  "improvements": [
+    "Analysis error occurred"
+  ],
+  "keywords": [],
+  "assessment": "Error during analysis: Error calling model 'gemini-1.5-flash' (NOT_FOUND): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}"
+}

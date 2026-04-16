@@ -1,0 +1,17 @@
+{
+  "Vacation": {
+    "max_days_without_hr": 5
+  },
+  "Sick Leave": {
+    "max_days_without_hr": 3
+  },
+  "Maternity/Paternity": {
+    "always_hr": true
+  },
+  "Bereavement": {
+    "max_days": 5
+  },
+  "Personal Leave": {
+    "max_days_without_hr": 2
+  }
+}

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Face Recognition Attendance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .video-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .video-wrapper {
+            position: relative;
+        }
+        video {
+            border: 3px solid #4CAF50;
+            border-radius: 12px;
+            max-width: 640px;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        canvas {
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            max-width: 640px;
+            width: 100%;
+            display: none;
+        }
+        .status-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+        }
+        .status-indicator.active {
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 5px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #stopBtn {
+            background-color: #f44336;
+        }
+        #stopBtn:hover {
+            background-color: #da190b;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.5s;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result.success {
+            background-color: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+        }
+        .result.warning {
+            background-color: #fff3cd;
+            border: 2px solid #ffeaa7;
+            color: #856404;
+        }
+        .result.info {
+            background-color: #d1ecf1;
+            border: 2px solid #bee5eb;
+            color: #0c5460;
+        }
+        .welcome-message {
+            font-size: 24px;
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            animation: bounceIn 1s;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .welcome-message.checkin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .welcome-message.checkout {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        #resultImage {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+        .employee-info {
+            margin-top: 10px;
+            line-height: 1.8;
+        }
+        .processing {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Automatic Face Recognition Attendance</h1>
+        <p class="subtitle">System will automatically detect and recognize faces</p>
+
+        <div class="controls">
+            <button id="startBtn">🚀 Start Automatic Detection</button>
+            <button id="stopBtn" disabled>🛑 Stop Detection</button>
+        </div>
+
+        <div class="video-container">
+            <div class="video-wrapper">
+                <video id="video" width="640" height="480" autoplay></video>
+                <div id="statusIndicator" class="status-indicator">Ready</div>
+            </div>
+        </div>
+
+        <canvas id="canvas" width="640" height="480"></canvas>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resultDiv = document.getElementById('result');
+        const statusIndicator = document.getElementById('statusIndicator');
+
+        let stream = null;
+        let isDetecting = false;
+        let detectionInterval = null;
+        let lastDetectionTime = 0;
+        const DETECTION_COOLDOWN = 3000; // 3 seconds between detections
+        const API_URL = 'http://127.0.0.1:8000/attendance/recognize';
+
+        // Start automatic detection
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480, facingMode: 'user' }
+                });
+                video.srcObject = stream;
+
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+
+                // Wait for video to be ready
+                video.onloadedmetadata = () => {
+                    startAutomaticDetection();
+                };
+
+                updateStatus('Scanning...', true);
+                showResult('📹 Camera started. System is now scanning for faces automatically...', 'info');
+            } catch (err) {
+                showResult('❌ Error accessing camera: ' + err.message, 'error');
+            }
+        });
+
+        // Stop automatic detection
+        stopBtn.addEventListener('click', () => {
+            stopAutomaticDetection();
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+
+                updateStatus('Stopped', false);
+                showResult('🛑 Detection stopped', 'info');
+            }
+        });
+
+        // Start automatic face detection
+        function startAutomaticDetection() {
+            isDetecting = true;
+            detectionInterval = setInterval(() => {
+                if (isDetecting) {
+                    captureAndRecognize();
+                }
+            }, 1000); // Check every second
+        }
+
+        // Stop automatic detection
+        function stopAutomaticDetection() {
+            isDetecting = false;
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+            }
+        }
+
+        // Update status indicator
+        function updateStatus(text, active) {
+            statusIndicator.textContent = text;
+            if (active) {
+                statusIndicator.classList.add('active');
+            } else {
+                statusIndicator.classList.remove('active');
+            }
+        }
+
+        // Capture and recognize face
+        async function captureAndRecognize() {
+            // Cooldown check to avoid spamming
+            const now = Date.now();
+            if (now - lastDetectionTime < DETECTION_COOLDOWN) {
+                return; // Skip if too soon
+            }
+
+            // Draw current video frame to canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to blob
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    return;
+                }
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('image', blob, 'capture.jpg');
+
+                updateStatus('Processing...', true);
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.error) {
+                        if (data.error.includes('No face detected') || data.error.includes('Invalid image')) {
+                            showResult('⚠️ Face not clear! Please look at the camera and try again.', 'warning');
+                            updateStatus('No face detected', true);
+                        } else if (data.error.includes('No employees registered')) {
+                            showResult('❌ ' + data.error, 'error');
+                            updateStatus('No employees', false);
+                        } else {
+                            showResult('❌ ' + data.error, 'error');
+                            updateStatus('Error', false);
+                        }
+                    } else if (data.results && data.results.length > 0) {
+                        lastDetectionTime = now;
+                        displayResults(data);
+                        updateStatus('Face detected!', true);
+                    } else {
+                        updateStatus('Scanning...', true);
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                    updateStatus('Scanning...', true);
+                }
+            }, 'image/jpeg', 0.85);
+        }
+
+        function displayResults(data) {
+            let html = '';
+
+            data.results.forEach((result, index) => {
+                if (result.recognized) {
+                    // Determine welcome or goodbye message
+                    let welcomeMsg = '';
+                    let welcomeClass = '';
+
+                    if (result.action === 'CHECK-IN') {
+                        welcomeMsg = `🎉 Welcome ${result.employee_name}! 🌟<br>Have a great day at work!`;
+                        welcomeClass = 'checkin';
+                    } else {
+                        welcomeMsg = `👋 Goodbye ${result.employee_name}! 🌙<br>See you tomorrow! You worked ${result.work_hours} hours today.`;
+                        welcomeClass = 'checkout';
+                    }
+
+                    html += `<div class="welcome-message ${welcomeClass}">${welcomeMsg}</div>`;
+
+                    const actionIcon = result.action === 'CHECK-IN' ? '🟢' : '🔴';
+                    const actionColor = result.action === 'CHECK-IN' ? '#28a745' : '#dc3545';
+
+                    html += `
+                        <div class="employee-info" style="border-left: 4px solid ${actionColor}; padding-left: 10px; margin-top: 20px;">
+                            ${actionIcon} <strong>${result.action}</strong><br><br>
+                            ✅ <strong>Employee Recognized!</strong><br>
+                            <strong>Name:</strong> ${result.employee_name}<br>
+                            <strong>ID:</strong> ${result.employee_id}<br>
+                            <strong>Department:</strong> ${result.department || 'N/A'}<br>
+                            <strong>Position:</strong> ${result.position || 'N/A'}<br><br>
+
+                            <strong>📅 Today's Attendance:</strong><br>
+                            <strong>Check-in:</strong> ${result.check_in ? new Date(result.check_in).toLocaleTimeString() : 'Not yet'}<br>
+                            <strong>Check-out:</strong> ${result.check_out ? new Date(result.check_out).toLocaleTimeString() : 'Not yet'}<br>
+                            <strong>Work Hours:</strong> ${result.work_hours || 0} hrs<br>
+                            ${result.overtime_hours > 0 ? `<strong>⏰ Overtime:</strong> ${result.overtime_hours} hrs<br>` : ''}
+                            <strong>Confidence:</strong> ${(result.confidence * 100).toFixed(2)}%
+                        </div>
+                    `;
+
+                    // Play sound based on action
+                    playNotificationSound(result.action);
+                } else {
+                    html += `
+                        <div class="employee-info" style="border-left: 4px solid #dc3545; padding-left: 10px;">
+                            ❌ <strong>Face not recognized</strong><br>
+                            Please register your face in the system first.
+                        </div>
+                    `;
+                }
+            });
+
+            // Display processed image with bounding boxes
+            if (data.processed_image) {
+                html += `<br><h4>📸 Captured Image:</h4><img id="resultImage" src="data:image/jpeg;base64,${data.processed_image}" alt="Processed Image">`;
+            }
+
+            resultDiv.innerHTML = html;
+            resultDiv.className = 'result ' + (data.results.some(r => r.recognized) ? 'success' : 'error');
+            resultDiv.style.display = 'block';
+
+            // Auto-hide after showing recognized face for 5 seconds
+            if (data.results.some(r => r.recognized)) {
+                setTimeout(() => {
+                    if (resultDiv.style.display === 'block') {
+                        resultDiv.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        }
+
+        // Play notification sound
+        function playNotificationSound(action) {
+            // Create a simple beep sound using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                if (action === 'CHECK-IN') {
+                    // Higher pitch for check-in
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                } else {
+                    // Lower pitch for check-out
+                    oscillator.frequency.value = 400;
+                    oscillator.type = 'sine';
+                }
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        function showResult(message, type) {
+            resultDiv.innerHTML = message;
+            resultDiv.className = 'result ' + type;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

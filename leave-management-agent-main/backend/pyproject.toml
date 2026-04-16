@@ -1,0 +1,22 @@
+[project]
+name = "leave-management-agent"
+version = "1.0.0"
+description = "Autonomous leave management agent with LangGraph"
+requires-python = ">=3.10"
+dependencies = [
+    "langgraph>=0.2.0",
+    "langchain>=0.3.0",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+    "flask>=3.0.0",
+    "flask-cors>=4.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent*"]
+exclude = ["data*"]
